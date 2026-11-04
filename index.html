@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f07818">
+<meta name="description" content="Yediklerimi Yak - Eğlenceli ekran simülasyonu">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Yediklerimi Yak</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 18px;
+  font-family: Arial, sans-serif;
+  background: #fff7ed;
+  color: #382719;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+}
+
+header {
+  background: #f07818;
+  color: white;
+  text-align: center;
+  padding: 24px 12px;
+  border-radius: 20px;
+}
+
+header h1 {
+  margin: 5px;
+  font-size: 30px;
+}
+
+header p {
+  margin-bottom: 0;
+}
+
+h2 {
+  font-size: 22px;
+  margin-top: 25px;
+}
+
+.food-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+.food {
+  background: white;
+  border: 2px solid #f3c49d;
+  border-radius: 15px;
+  padding: 17px 8px;
+  font-size: 17px;
+  font-weight: bold;
+  color: #382719;
+  cursor: pointer;
+  min-height: 110px;
+}
+
+.food:hover, .food:focus {
+  border-color: #f07818;
+  background: #fff0df;
+}
+
+.food.selected {
+  border: 3px solid #f07818;
+  background: #fff0df;
+}
+
+.weight-box, .invoice, .simulation {
+  background: white;
+  padding: 18px;
+  margin-top: 20px;
+  border-radius: 16px;
+  border: 1px solid #f3c49d;
+}
+
+input {
+  width: 100%;
+  padding: 15px;
+  margin-top: 10px;
+  border: 2px solid #d9b99e;
+  border-radius: 10px;
+  font-size: 20px;
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 12px;
+  background: #f07818;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.invoice h2 {
+  color: #e56b0a;
+  margin-top: 0;
+}
+
+.invoice p {
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.result {
+  background: #fff0df;
+  padding: 13px;
+  border-radius: 10px;
+  line-height: 1.8;
+  font-size: 17px;
+}
+
+.message {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #fff0df;
+  font-size: 17px;
+  line-height: 1.5;
+  display: none;
+}
+
+#counter {
+  font-size: 48px;
+  font-weight: bold;
+  color: #f07818;
+  text-align: center;
+  margin: 15px;
+}
+
+.note {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #684b36;
+  margin-top: 22px;
+}
+
+footer {
+  text-align: center;
+  margin-top: 25px;
+  padding: 15px;
+  font-size: 14px;
+  color: #684b36;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <div style="font-size:48px">🍟</div>
+  <h1>Yediklerimi Yak</h1>
+  <p>Yediklerinin eğlenceli faturası!</p>
+</header>
+
+<h2>🍔 Bir yiyecek seç</h2>
+
+<div class="food-grid">
+  <button class="food" onclick="selectFood(this,'Küçük paket cips (40 g)',210)">
+    🥔<br>Küçük paket cips<br>210 kcal
+  </button>
+
+  <button class="food" onclick="selectFood(this,'Baklava (1 dilim, 40 g)',175)">
+    🥮<br>Baklava<br>175 kcal
+  </button>
+
+  <button class="food" onclick="selectFood(this,'Kola (1 kutu, 330 ml)',140)">
+    🥤<br>Kola<br>140 kcal
+  </button>
+
+  <button class="food" onclick="selectFood(this,'Çikolatalı gofret (35 g)',185)">
+    🍫<br>Çikolatalı gofret<br>185 kcal
+  </button>
+</div>
+
+<div class="weight-box">
+  <h2>⚖️ Örnek ağırlık (kg)</h2>
+  <input
+    type="text"
+    id="weight"
+    inputmode="decimal"
+    placeholder="Örnek: 70"
+    value="70"
+    aria-label="Örnek ağırlık kilogram"
+  >
+  <p id="weightWarning" role="alert" style="color:#b42318"></p>
+</div>
+
+<div class="invoice" id="invoice" style="display:none">
+  <h2>🧾 FATURA</h2>
+  <p id="foodName"></p>
+  <p id="foodKcal"></p>
+  <div class="result" id="results"></div>
+
+  <button onclick="purchase()">Satın alıyorum</button>
+  <button onclick="bargain()">Pazarlık yap</button>
+
+  <div class="message" id="message" role="status"></div>
+</div>
+
+<div class="simulation">
+  <h2>⏱️ Eğlenceli simülasyon</h2>
+  <p>Simülasyonu başlat ve ekrandaki sayacı izle!</p>
+  <div id="counter">20</div>
+  <button id="startButton" onclick="startSimulation()">
+    Simülasyonu başlat
+  </button>
+  <div class="message" id="timerMessage" role="status"></div>
+</div>
+
+<div class="note">
+  <strong>Bilgilendirme:</strong><br>
+  Gösterilen sonuçlar verilen hesaplama modeline göre yaklaşık
+  değerlerdir. Gerçek yiyeceklerin enerji bilgisinde paket etiketi
+  esas alınmalıdır. Yiyecek suç değildir, egzersiz ceza değildir.
+  Bu uygulama sağlık veya diyet önerisi vermez ve kişisel bir
+  klinik değerlendirme yapmaz.
+  <br><br>
+  Simülasyon yalnızca ekran üzerinde gerçekleşir.
+  Fiziksel egzersiz yapmanız gerekmez.
+</div>
+
+<footer>
+  Eğitim amaçlı ekran simülasyonudur.
+</footer>
+
+</div>
+
+<script>
+const MET_WALK = 4.8;
+const MET_SQUAT = 6.5;
+const MET_STAIRS = 6.8;
+
+let selectedFood = null;
+let timerRunning = false;
+let timerInterval = null;
+
+const weightInput = document.getElementById("weight");
+const warning = document.getElementById("weightWarning");
+
+// Önceden kaydedilmiş geçerli ağırlığı getir
+const savedWeight = localStorage.getItem("ornekAgirlik");
+
+if (savedWeight !== null && validWeight(savedWeight)) {
+  weightInput.value = savedWeight;
+}
+
+// Ağırlık kontrolü
+function validWeight(value) {
+  const normalized = String(value).trim().replace(",", ".");
+
+  if (normalized === "") return false;
+
+  const number = Number(normalized);
+
+  return Number.isFinite(number) && number > 0;
+}
+
+function getWeight() {
+  const value = weightInput.value.trim().replace(",", ".");
+
+  if (!validWeight(value)) {
+    warning.textContent =
+      "Lütfen sıfırdan büyük, geçerli bir ağırlık girin. Hesaplama yapılmadı.";
+    return null;
+  }
+
+  const weight = Number(value);
+
+  warning.textContent = "";
+  localStorage.setItem("ornekAgirlik", String(weight));
+
+  return weight;
+}
+
+// Yiyecek seçimi
+function selectFood(button, name, kcal) {
+  const weight = getWeight();
+
+  if (weight === null) {
+    return;
+  }
+
+  document.querySelectorAll(".food").forEach(item => {
+    item.classList.remove("selected");
+  });
+
+  button.classList.add("selected");
+
+  selectedFood = { name, kcal };
+
+  calculate();
+}
+
+// Hesaplama
+function calculate() {
+  const weight = getWeight();
+
+  if (weight === null || selectedFood === null) {
+    document.getElementById("invoice").style.display = "none";
+    return;
+  }
+
+  const kcal = selectedFood.kcal;
+
+  // Bir dakikadaki yaklaşık enerji harcaması
+  const walkPerMinute = MET_WALK * 3.5 * weight / 200;
+  const squatPerMinute = MET_SQUAT * 3.5 * weight / 200;
+  const stairsPerMinute = MET_STAIRS * 3.5 * weight / 200;
+
+  // Ara sonuçlar yuvarlanmaz
+  const walkMinutes = kcal / walkPerMinute;
+  const squatCount = (kcal / squatPerMinute) * 20;
+  const stairsCount = (kcal / stairsPerMinute) * 4;
+
+  document.getElementById("foodName").textContent =
+    "Yiyecek: " + selectedFood.name;
+
+  document.getElementById("foodKcal").textContent =
+    "Enerji: " + kcal + " kcal";
+
+  document.getElementById("results").innerHTML =
+    "<strong>Alternatif hesaplanan karşılıklar:</strong><br>" +
+    "🚶 Tempolu yürüyüş: " + Math.round(walkMinutes) + " dakika" +
+    "<br>🏋️ Squat: " + Math.round(squatCount) + " tekrar" +
+    "<br>🪜 Merdiven: " + Math.round(stairsCount) + " kat" +
+    "<br><br><strong>Yürüyüş VEYA squat VEYA merdiven.</strong>";
+
+  document.getElementById("invoice").style.display = "block";
+  document.getElementById("message").style.display = "none";
+}
+
+// Ağırlık değişince geçersiz girişleri denetle
+weightInput.addEventListener("input", () => {
+  if (!validWeight(weightInput.value)) {
+    warning.textContent =
+      "Geçersiz ağırlık! Hesaplama yapılmayacak.";
+    document.getElementById("invoice").style.display = "none";
+    return;
+  }
+
+  warning.textContent = "";
+
+  if (selectedFood !== null) {
+    calculate();
+  } else {
+    getWeight();
+  }
+});
+
+// Satın alma mesajı
+function purchase() {
+  const message = document.getElementById("message");
+
+  message.textContent = "🎉 Afiyet olsun!";
+  message.style.display = "block";
+}
+
+// Pazarlık mesajı
+function bargain() {
+  const message = document.getElementById("message");
+
+  message.textContent =
+    "🤝 Anlaşma önerisi: Yarım porsiyon olsun! " +
+    "Yanında 20 jumping jack temalı eğlenceli bir pazarlık! " +
+    "Bu yalnızca ekran simülasyonudur; egzersiz yapmanız gerekmez.";
+
+  message.style.display = "block";
+}
+
+// Sayaç simülasyonu
+function startSimulation() {
+  if (timerRunning) return;
+
+  timerRunning = true;
+
+  let count = 20;
+
+  const counter = document.getElementById("counter");
+  const startButton = document.getElementById("startButton");
+  const message = document.getElementById("timerMessage");
+
+  clearInterval(timerInterval);
+
+  counter.textContent = count;
+  message.style.display = "none";
+  startButton.disabled = true;
+
+  timerInterval = setInterval(() => {
+    count--;
+
+    counter.textContent = count;
+
+    if (count <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      timerRunning = false;
+
+      message.textContent = "🎉 Anlaşma tamam!";
+      message.style.display = "block";
+
+      startButton.disabled = false;
+    }
+  }, 1500);
+}
+
+// Service worker kaydı
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js")
+      .catch(error => {
+        console.log("Service worker kaydedilemedi:", error);
+      });
+  });
+}
+</script>
+
+</body>
+</html>
